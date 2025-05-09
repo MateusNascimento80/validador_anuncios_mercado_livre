@@ -67,3 +67,58 @@ if uploaded_file:
                 erros.append("Título contém cor, o que não é permitido")
 
             # Verificar campos obrigatórios por categoria
+            categoria = "Tênis"  # Categoria fixa por enquanto
+            campos_obrigatorios = CAMPOS_OBRIGATORIOS_POR_CATEGORIA.get(categoria, [])
+
+            for col in df.columns:
+                col_lower = col.lower()
+                if col_lower in ["parent_category_id", "main_color"]:
+                    continue  # campos que podem ficar em branco
+                valor = str(row[col]).strip().lower()
+                if valor in ["", "não se aplica"]:
+                    erros.append(f"Campo '{col}' está vazio ou com 'Não se aplica'")
+
+            # Verificação específica para campos obrigatórios
+            for campo in campos_obrigatorios:
+                nome_coluna = mapa_colunas.get(campo.lower())
+                if nome_coluna:
+                    valor = str(row.get(nome_coluna, "")).strip().lower()
+                    if valor in ["", "não se aplica"]:
+                        erros.append(f"Campo obrigatório '{nome_coluna}' não preenchido corretamente")
+
+            # Código universal de produto
+            cup = str(row.get(mapa_colunas.get("código universal de produto", ""), "")).strip().lower()
+            if cup in ["", "outro motivo"]:
+                erros.append("Código universal de produto inválido")
+
+            # Marca
+            marca = str(row.get(mapa_colunas.get("marca", ""), "")).strip().lower()
+            if marca == "sem marca":
+                erros.append("Marca inválida")
+
+            resultados.append({
+                "Título": row.get(col_titulo, ""),
+                "Marca": marca,
+                "Código universal de produto": cup,
+                "Erros": "\n".join(erros),
+                "Score": max(10 - len(erros), 0)
+            })
+
+        df_resultado = pd.DataFrame(resultados)
+
+        st.markdown("### ✅ Resultado")
+        st.dataframe(df_resultado, use_container_width=True)
+
+        def converter_df(df):
+            buffer = BytesIO()
+            with pd.ExcelWriter(buffer, engine='openpyxl') as writer:
+                df.to_excel(writer, index=False)
+            return buffer.getvalue()
+
+        excel_bytes = converter_df(df_resultado)
+        st.download_button(
+            label="📥 Baixar resultado em Excel",
+            data=excel_bytes,
+            file_name="resultado_validacao.xlsx",
+            mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+        )
