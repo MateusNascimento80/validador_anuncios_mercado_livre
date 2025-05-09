@@ -7,7 +7,7 @@ st.set_page_config(page_title="📦 Validador de Anúncios - Mercado Livre")
 st.title("📦 Validador de Anúncios - Mercado Livre")
 
 # Palavras proibidas e sazonais
-PALAVRAS_NEGATIVAS = ["promoção", "lançamento"]
+PALAVRAS_NEGATIVAS = ["promoção", "lançamento", "oferta"]
 PALAVRAS_SAZONAIS = ["black friday", "natal", "dia das mães", "dia dos pais", "dia dos namorados", "fim de ano", "dia das crianças"]
 PALAVRAS_PI = [
     "nike", "adidas", "coca-cola", "disney", "marvel", "batman", "superman",
